@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
 
-# Configuração da pagina 
+# nesta aba iniciarei as configuraçoes de pagina 
 st.set_page_config(page_title="calculadora armazem", layout="centered")
 
-# Funções de cálculo (aqui faço as funçoes)
+# Funções de cálculo ( parte de distribuição)
 def calcular_distribuicao_fardos(total, num_lotes, cristal=None, demerara=None):
     lotes_inteiros = int(num_lotes)
     tem_meio_lote = num_lotes % 1 != 0
@@ -13,74 +13,99 @@ def calcular_distribuicao_fardos(total, num_lotes, cristal=None, demerara=None):
         tamanho_lote = int(total // (lotes_inteiros + 0.5))
         resto = total - (lotes_inteiros * tamanho_lote)
     else:
+        # aqui e para somas de lotes inteiros 
         tamanho_lote = total // lotes_inteiros
         resto = total % lotes_inteiros
-    
-    primeiro_lote = tamanho_lote + (resto if not tem_meio_lote else 0)
-    outros_lotes = tamanho_lote
     
     dados = []
     
     if cristal is not None:  # Caso Cristal + Demerara
         cristal_restante = cristal
+        demerara_restante = demerara if demerara is not None else 0
         
-        if not tem_meio_lote and cristal_restante >= primeiro_lote:
-            dados.append(["Lote 1", f"12*{primeiro_lote//12}+{primeiro_lote%12}", "0", primeiro_lote])
-            cristal_restante -= primeiro_lote
-        elif not tem_meio_lote:
-            demerara_lote1 = primeiro_lote - cristal_restante
-            dados.append(["Lote 1", 
-                         f"12*{cristal_restante//12}+{cristal_restante%12}", 
-                         f"12*{demerara_lote1//12}+{demerara_lote1%12}", 
-                         primeiro_lote])
-            cristal_restante = 0
-        
-        for i in range(1 if tem_meio_lote else 0, lotes_inteiros + (1 if tem_meio_lote else 0)):
-            if cristal_restante <= 0:
-                dados.append([f"Lote {i+1}" if not tem_meio_lote else f"Lote {i}", 
-                             "0", 
-                             f"12*{outros_lotes//12}+{outros_lotes%12}", 
-                             outros_lotes])
-            else:
-                if cristal_restante >= outros_lotes:
-                    dados.append([f"Lote {i+1}" if not tem_meio_lote else f"Lote {i}", 
-                                 f"12*{outros_lotes//12}+{outros_lotes%12}", 
-                                 "0", 
-                                 outros_lotes])
-                    cristal_restante -= outros_lotes
+        if not tem_meio_lote:
+            #(distribuição para lotes inteiros)
+            valor_base = total // lotes_inteiros
+            resto = total % lotes_inteiros
+            
+            # Distribui primeiro todo o cristal
+            for i in range(lotes_inteiros):
+                # Primeiro lote leva o resto de fardos , a sobra 
+                if i == 0:
+                    lote_atual = valor_base + resto
                 else:
-                    demerara_lote = outros_lotes - cristal_restante
-                    dados.append([f"Lote {i+1}" if not tem_meio_lote else f"Lote {i}", 
-                                 f"12*{cristal_restante//12}+{cristal_restante%12}",
-                                 f"12*{demerara_lote//12}+{demerara_lote%12}", 
-                                 outros_lotes])
-                    cristal_restante = 0
-        
-        if tem_meio_lote:
-            dados.append(["Meio lote", "0", f"6*{resto//6}+{resto%6}", resto])
-        
-        demerara_distribuido = total - (cristal - cristal_restante)
-        if cristal_restante == 0 and demerara_distribuido == demerara:
-            st.success(f"✓ CERTO! Cristal: {cristal} | Demerara: {demerara} | Total: {total}")
+                    lote_atual = valor_base
+                
+                if cristal_restante > 0:
+                    if cristal_restante >= lote_atual:
+                        dados.append([f"Lote {i+1}", f"12*{lote_atual//12}+{lote_atual%12}", "0", lote_atual])
+                        cristal_restante -= lote_atual
+                    else:
+                        demerara_no_lote = lote_atual - cristal_restante
+                        dados.append([f"Lote {i+1}", 
+                                    f"12*{cristal_restante//12}+{cristal_restante%12}",
+                                    f"12*{demerara_no_lote//12}+{demerara_no_lote%12}", 
+                                    lote_atual])
+                        cristal_restante = 0
+                        demerara_restante -= demerara_no_lote
+                else:
+                    dados.append([f"Lote {i+1}", "0", f"12*{lote_atual//12}+{lote_atual%12}", lote_atual])
+                    demerara_restante -= lote_atual
         else:
-            st.error(f"ERRO! Cristal: {cristal-cristal_restante}/{cristal} | Demerara: {demerara_distribuido}/{demerara}")
+            # Lógica para meia ( vou chamar de meio lote)
+            for i in range(lotes_inteiros + 1):
+                if i < lotes_inteiros:
+                    lote_atual = tamanho_lote
+                    lote_nome = f"Lote {i+1}"
+                else:
+                    lote_atual = resto
+                    lote_nome = "Meio lote"
+                
+                if cristal_restante > 0:
+                    if cristal_restante >= lote_atual:
+                        dados.append([lote_nome, f"12*{lote_atual//12}+{lote_atual%12}", "0", lote_atual])
+                        cristal_restante -= lote_atual
+                    else:
+                        demerara_no_lote = lote_atual - cristal_restante
+                        dados.append([lote_nome, 
+                                    f"12*{cristal_restante//12}+{cristal_restante%12}",
+                                    f"12*{demerara_no_lote//12}+{demerara_no_lote%12}" if i < lotes_inteiros else f"6*{demerara_no_lote//6}+{demerara_no_lote%6}", 
+                                    lote_atual])
+                        cristal_restante = 0
+                        demerara_restante -= demerara_no_lote
+                else:
+                    dados.append([lote_nome, "0", 
+                                f"12*{lote_atual//12}+{lote_atual%12}" if i < lotes_inteiros else f"6*{lote_atual//6}+{lote_atual%6}", 
+                                lote_atual])
+                    demerara_restante -= lote_atual
+        
+        # verificando as informaçoes finais 
+        total_calculado = sum([row[3] for row in dados])
+        cristal_distribuido = cristal - cristal_restante
+        demerara_distribuido = (demerara - demerara_restante) if demerara is not None else 0
+        
+        if total_calculado == total and cristal_distribuido == cristal and (demerara is None or demerara_distribuido == demerara):
+            st.success(f"✓ Distribuição correta! Total: {total_calculado}")
+        else:
+            st.error(f"ERRO! Faltou distribuir: Cristal: {cristal_restante}/{cristal} | Demerara: {demerara_restante}/{demerara}")
         
         df = pd.DataFrame(dados, columns=["Lote", "Cristal", "Demerara", "Total"])
     
-    else:  # Caso apenas Fardos Cristal (nesse caso so pra calculo do fardo cristal)
+    else:  # Caso de soma para apenas fardo cristal de 30kg
         if not tem_meio_lote:
-            dados.append(["Lote 1", f"12*{(primeiro_lote//12)}+{primeiro_lote%12}", primeiro_lote])
+            dados.append(["Lote 1", f"12*{(tamanho_lote + resto)//12}+{(tamanho_lote + resto)%12}", tamanho_lote + resto])
             for i in range(1, lotes_inteiros):
-                dados.append([f"Lote {i+1}", f"12*{outros_lotes//12}+{outros_lotes%12}", outros_lotes])
+                dados.append([f"Lote {i+1}", f"12*{tamanho_lote//12}+{tamanho_lote%12}", tamanho_lote])
         else:
             for i in range(lotes_inteiros):
-                dados.append([f"Lote {i+1}", f"12*{outros_lotes//12}+{outros_lotes%12}", outros_lotes])
+                dados.append([f"Lote {i+1}", f"12*{tamanho_lote//12}+{tamanho_lote%12}", tamanho_lote])
             dados.append(["Meio lote", f"6*{resto//6}+{resto%6}", resto])
         
         df = pd.DataFrame(dados, columns=["Lote", "Fardos (12)", "Total"])
     
     st.write(df.to_html(index=False), unsafe_allow_html=True)
 
+# funçoes 
 def calcular_sacos(total_sacos, num_lotes_sacos):
     lotes_inteiros = int(num_lotes_sacos)
     tem_meio_lote = num_lotes_sacos % 1 != 0
@@ -109,7 +134,7 @@ def calcular_sacos(total_sacos, num_lotes_sacos):
     df = pd.DataFrame(dados, columns=["Lote", "Sacos (5)", "Total"])
     st.write(df.to_html(index=False), unsafe_allow_html=True)
 
-# qui vou da inicio com o titalo ( talvez eu mude depois )
+# interface e titalo do app calculadora armazém
 st.title("🚚 CALCULADORA DE CARGAS ARMAZÉM 2025")
 
 tab1, tab2, tab3 = st.tabs(["Fardo Cristal + Demerara", "Apenas Fardos Cristal", "Apenas Sacos"])
@@ -147,4 +172,4 @@ st.markdown("---")
 st.markdown("**Desenvolvido por Lucas Cardoso dia 15/04/2025**")
 st.markdown("Sistema de calculo de cargas armazém agrovale 2025/2026")
 
-#sistema simples concluido por mim lucas cardoso de freitas na data do dia 15 de abril de 2025 vou considerara esse app como a versao 1.0 depois posso estar fazendo alguns ajustes e melhorando o codigo. lembrando que desemvolvi todo em streamlit execuçao= streamlit run app.py
+# codigo alterado, corrigindo erros de calculos, vou considerar ainda essa como a versão 1.0 , data da ultima alteração 16/04/2025. para executar : streamlit run app.py. esse sistema ja esta no meu repositorio da git telefone (11 9 99454425 )

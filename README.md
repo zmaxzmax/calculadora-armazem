@@ -1,2 +1,2 @@
-# calculadora-armazem
-CALCULADORA DE FARDOS E SACOS ARMAZÉM 
+# calculadora de cargas
+CALCULADORA DE FARDOS E SACOS

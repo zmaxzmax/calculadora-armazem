@@ -266,6 +266,6 @@ st.markdown("""
 <hr style="margin-top: 40px; margin-bottom: 10px;">
 
 <div style="text-align: center; color: gray; font-size: 14px;">
-    APP Calculadora de Cargas <b>vs-2.1</b> 
+    APP Calculadora de Cargas <b>vs-2.5</b> 
 </div>
 """, unsafe_allow_html=True)

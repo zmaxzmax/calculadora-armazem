@@ -214,7 +214,7 @@ with tab1:
         cristal = st.number_input("Cristal:", min_value=0, step=1, value=500, key="cristal")
         demerara = st.number_input("Demerara:", min_value=0, step=1, value=570, key="demerara")
         
-        if st.button("Calcular Fardo", key="btn_fardo"):
+        if st.button("Calcular Fardos", key="btn_fardo"):
             if (cristal + demerara) != total_fardo:
                 st.error("A quantidade de fardo informada nao bate com a soma total da carga, verifique a quantidade de cristal e demerara!")
             else:
@@ -234,7 +234,7 @@ with tab2:
         total_cristal = st.number_input("Total de Fardos:", min_value=1, step=1, value=1070, key="total_cristal")
         lotes_cristal = st.number_input("Nº Lotes (use ,5 para meia):", min_value=0.5, step=0.5, value=10.5, key="lotes_cristal")
         
-        if st.button("Calcular Fardos Cristal", key="btn_cristal"):
+        if st.button("Calcular Fardos", key="btn_cristal"):
             with col2:
                 calcular_distribuicao_fardos(total_cristal, lotes_cristal)
     
@@ -266,6 +266,6 @@ st.markdown("""
 <hr style="margin-top: 40px; margin-bottom: 10px;">
 
 <div style="text-align: center; color: gray; font-size: 14px;">
-    APP Calculadora de Cargas <b>2.0</b> 
+    APP Calculadora de Cargas <b>vs-2.1</b> 
 </div>
 """, unsafe_allow_html=True)

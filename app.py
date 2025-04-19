@@ -203,7 +203,7 @@ def calcular_sacos(total_sacos, num_lotes_sacos):
     st.write(df.to_html(index=False), unsafe_allow_html=True)
 
 # Interface para aparecer fardo cristal + demerara, so cristal e sacaria
-tab1, tab2, tab3 = st.tabs(["Fardo Cristal + Demerara", "Apenas Fardos Cristal", "Sacaria"])
+tab1, tab2, tab3 = st.tabs(["Fardo Cristal + Demerara", "Apenas Fardos", "Sacaria"])
 
 with tab1:
     col1, col2, col3 = st.columns([1.5, 2, 1.5])
